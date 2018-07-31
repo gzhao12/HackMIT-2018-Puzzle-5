@@ -14,6 +14,23 @@ def get_graph():
 
     return data
 
+def get_pos():
+    r = requests.get('https://gps.hackmirror.icu/api/position?user=gzhao12_6f2910')
+    open('currentPos.json', 'wb').write(r.content)
+
+    with open('currentPos.json') as f:
+        data = json.load(f)
+
+    return data
+
+def get_time():
+    r = requests.get('https://gps.hackmirror.icu/api/time?user=gzhao12_6f2910')
+    open('currentTime.json', 'wb').write(r.content)
+
+    with open('currentTime.json') as f:
+        data = json.load(f)
+
+        return data
 class Heap():
 
     def __init__(self):
@@ -199,16 +216,49 @@ class Graph():
                         minHeap.decreaseKey(v, dist[v])
                         parents[v] = u
 
-        print(parents)
-        # printArr(dist,V)
+        return parents, dist
 
+isSolved = False
 
-graph = Graph(22500)
-data = get_graph()
-counter = 0
-for arr in data["graph"]:
-    for integer in range(len(arr)):
-        graph.addEdge(arr[integer], counter, 1)
-    counter = counter + 1
+while not isSolved:
+    graph = Graph(22500)
+    data = get_graph()
+    counter = 0
+    for arr in data["graph"]:
+        for integer in range(len(arr)):
+            graph.addEdge(arr[integer], counter, 1)
+        counter = counter + 1
 
-graph.dijkstra(22499)
+    parents, dist = graph.dijkstra(22499)
+
+    currentNode = 0
+    
+    currentTime = get_time()
+    currentPos = get_pos()
+
+    while(currentNode != 22499):
+        if (dist[currentNode] > currentTime["time"]):
+            print("Distance too far! Resetting...")
+            requests.post('https://gps.hackmirror.icu/api/reset?user=gzhao12_6f2910')
+            break
+        elif (parents[currentNode] == -1):
+            print("No valid moves! Resetting...")
+            requests.post('https://gps.hackmirror.icu/api/reset?user=gzhao12_6f2910')
+            break
+        elif (parents[currentNode] == currentNode + 150):
+            requests.post('https://gps.hackmirror.icu/api/move?user=gzhao12_6f2910&move=down')
+        elif (parents[currentNode] == currentNode - 150):
+            requests.post('https://gps.hackmirror.icu/api/move?user=gzhao12_6f2910&move=up')
+        elif (parents[currentNode] == currentNode + 1):
+            requests.post('https://gps.hackmirror.icu/api/move?user=gzhao12_6f2910&move=right')
+        else:
+            requests.post('https://gps.hackmirror.icu/api/move?user=gzhao12_6f2910&move=left')
+
+        currentTime = get_time()
+        currentPos = get_pos()
+        currentNode = 150 * currentPos["row"] + currentPos["col"]
+        print(currentNode)
+    if (currentNode != 22499):
+        currentNode = 0
+    else:
+        isSolved = True

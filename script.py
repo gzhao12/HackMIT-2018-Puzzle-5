@@ -147,7 +147,7 @@ class Graph():
     # of shortest paths from src to all vertices.
     # It is a O(ELogV) function
     def dijkstra(self, src):
-
+        parents = [-1] * 22500
         V = self.V  # Get the number of vertices in graph
         dist = []   # dist values used to pick minimum
                     # weight edge in cut
@@ -174,7 +174,6 @@ class Graph():
         # In the following loop, min heap contains all nodes
         # whose shortest distance is not yet finalized.
         while minHeap.isEmpty() == False:
-
             # Extract the vertex with minimum distance value
             newHeapNode = minHeap.extractMin()
             u = newHeapNode[0]
@@ -182,9 +181,11 @@ class Graph():
             # Traverse through all adjacent vertices of
             # u (the extracted vertex) and update their
             # distance values
+
             for pCrawl in self.graph[u]:
 
                 v = pCrawl[0]
+
 
                 # If shortest distance to v is not finalized
                 # yet, and distance to v through u is less
@@ -196,17 +197,18 @@ class Graph():
                         # update distance value
                         # in min heap also
                         minHeap.decreaseKey(v, dist[v])
+                        parents[v] = u
 
-        printArr(dist,V)
+        print(parents)
+        # printArr(dist,V)
 
 
 graph = Graph(22500)
 data = get_graph()
-
+counter = 0
 for arr in data["graph"]:
-    counter = 0
     for integer in range(len(arr)):
         graph.addEdge(arr[integer], counter, 1)
     counter = counter + 1
 
-graph.dijkstra(0)
+graph.dijkstra(22499)
